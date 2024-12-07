@@ -1,0 +1,79 @@
+# Creating an AWS EC2 instance
+aws ec2 run-instances \
+    # Specify the Amazon Machine Image (AMI) to use for the instance
+    --image-id "ami-0e2c8caa4b6378d8c" \
+    
+    # Define the instance type
+    --instance-type "t3a.micro" \
+    
+    # Specify the key pair for SSH access
+    --key-name "app" \
+    
+    # Configure block storage for the instance
+    --block-device-mappings '{
+        "DeviceName": "/dev/sda1",                # Set the root volume device name
+        "Ebs": {
+            "Encrypted": false,                  # Volume is not encrypted
+            "DeleteOnTermination": false,        # Keep the volume after termination
+            "SnapshotId": "snap-0ea137085731e5c98", # Snapshot to create the volume from
+            "VolumeSize": 20,                    # Volume size in GiB
+            "VolumeType": "standard"             # Volume type (magnetic storage)
+        }
+    }' \
+    
+    # Configure the network interface
+    --network-interfaces '{
+        "SubnetId": "subnet-0f4becebae73ec134",  # Attach the instance to this subnet
+        "DeleteOnTermination": false,           # Keep the network interface after termination
+        "AssociatePublicIpAddress": false,      # Do not assign a public IP
+        "DeviceIndex": 0,                       # Primary network interface
+        "Ipv6AddressCount": 1,                  # Request one IPv6 address
+        "Ipv6PrefixCount": 1,                   # Request one IPv6 prefix
+        "PrimaryIpv6": true,                    # Set IPv6 address as primary
+        "ConnectionTrackingSpecification": {
+            "TcpEstablishedTimeout": 4320,      # TCP timeout in seconds
+            "UdpStreamTimeout": 180,            # UDP stream timeout in seconds
+            "UdpTimeout": 30                    # UDP timeout in seconds
+        },
+        "Groups": ["sg-preview-1"]              # Assign security group(s)
+    }' \
+    
+    # Set CPU credit specification for burstable instances
+    --credit-specification '{
+        "CpuCredits": "standard"               # Use standard CPU credits
+    }' \
+    
+    # Add tags to the instance
+    --tag-specifications '{
+        "ResourceType": "instance",            # Apply tags to the instance
+        "Tags": [
+            {"Key": "Name", "Value": "shoppingkaro"} # Set a Name tag with value "shoppingkaro"
+        ]
+    }' \
+    
+    # Configure Spot instance options
+    --instance-market-options '{
+        "MarketType": "spot",                  # Launch as a Spot instance
+        "SpotOptions": {
+            "InstanceInterruptionBehavior": "stop", # Stop on interruption
+            "MaxPrice": "0.01",               # Maximum hourly price
+            "SpotInstanceType": "persistent" # Persistent Spot instance
+        }
+    }' \
+    
+    # Set metadata options
+    --metadata-options '{
+        "HttpEndpoint": "enabled",             # Enable metadata endpoint
+        "HttpProtocolIpv6": "disabled",        # Disable IPv6 for metadata
+        "HttpPutResponseHopLimit": 2           # Limit metadata request hops
+    }' \
+    
+    # Configure private DNS settings
+    --private-dns-name-options '{
+        "HostnameType": "ip-name",             # Use IP-based hostname
+        "EnableResourceNameDnsARecord": false, # Disable A record creation
+        "EnableResourceNameDnsAAAARecord": true # Enable AAAA record creation
+    }' \
+    
+    # Specify the number of instances to launch
+    --count "1"                                # Launch one instance
