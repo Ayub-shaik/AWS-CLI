@@ -1,6 +1,6 @@
 # Creating an AWS EC2 instance
 aws ec2 run-instances \
-    # Specify the Amazon Machine Image (AMI) to use for the instance
+    # Specify the Amazon Machine Image (AMI) to use for the instance.
     --image-id "ami-0e2c8caa4b6378d8c" \
     
     # Define the instance type
